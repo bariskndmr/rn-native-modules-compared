@@ -1,0 +1,28 @@
+{
+  "name": "@native-modules-playground/turbo-hash-toolkit",
+  "version": "0.0.0",
+  "description": "modules demo",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "TurboHashToolkitSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.nativemodulesplayground.turbohashtoolkit"
+    }
+  },
+  "author": " <> ()",
+  "license": "UNLICENSED",
+  "homepage": "#readme",
+  "create-react-native-library": {
+    "type": "turbo-module",
+    "languages": "kotlin-objc",
+    "tools": [
+      "eslint",
+      "jest",
+      "lefthook",
+      "release-it"
+    ],
+    "version": "0.63.1"
+  }
+}
