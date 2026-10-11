@@ -1,5 +1,5 @@
 #import <TurboHashToolkitSpec/TurboHashToolkitSpec.h>
 
-@interface TurboHashToolkit : NSObject <NativeTurboHashToolkitSpec>
+@interface TurboHashToolkit : NativeTurboHashToolkitSpecBase <NativeTurboHashToolkitSpec>
 
 @end
