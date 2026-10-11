@@ -1,10 +1,18 @@
-import { NativeModule, requireNativeModule } from 'expo';
+import { NativeModule, requireNativeModule } from "expo";
 
-import { ExpoHashToolkitModuleEvents } from './ExpoHashToolkit.types';
+export type TickEvent = { count: number };
 
-declare class ExpoHashToolkitModule extends NativeModule<ExpoHashToolkitModuleEvents> {
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+type ExpoHashToolkitEvents = {
+  onTick(event: TickEvent): void;
+};
+
+declare class ExpoHashToolkitModule extends NativeModule<ExpoHashToolkitEvents> {
+  add(a: number, b: number): number;
+  sha256(text: string): string;
+  sha256Bytes(data: Uint8Array): string;
+  sha256Iterated(text: string, iterations: number): Promise<string>;
+  startTicker(intervalMs: number): void;
+  stopTicker(): void;
 }
 
-export default requireNativeModule<ExpoHashToolkitModule>('ExpoHashToolkit');
+export default requireNativeModule<ExpoHashToolkitModule>("ExpoHashToolkit");

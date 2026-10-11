@@ -9,7 +9,20 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.nativemodulesplayground"
+      "bundleIdentifier": "com.anonymous.nativemodulesplayground",
+      "infoPlist": {
+        "UIApplicationSceneManifest": {
+          "UIApplicationSupportsMultipleScenes": false,
+          "UISceneConfigurations": {
+            "UIWindowSceneSessionRoleApplication": [
+              {
+                "UISceneConfigurationName": "Default Configuration",
+                "UISceneDelegateClassName": "EXExpoAppSceneDelegate"
+              }
+            ]
+          }
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -34,7 +47,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "./plugins/withSceneLifecycle"
     ],
     "experiments": {
       "typedRoutes": true,
