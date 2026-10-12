@@ -91,7 +91,31 @@ The screen at `src/app/index.tsx` runs these cases against every toolkit and hig
 
 It also checks that all three return the same hashes.
 
-> Results: _to be filled in from a Release build._ Debug builds add overhead and skew the numbers.
+#### Results
+
+Release builds on an Apple Silicon Mac: **iPhone 16e simulator (iOS 26)** and **Android emulator (Android 16, arm64)**. Absolute numbers will differ on real devices, and runs vary by about ±20%, so look at the ratios.
+
+<p>
+  <img src="docs/benchmark-ios.png" width="300" alt="Benchmark results on iOS" />
+  <img src="docs/benchmark-android.png" width="300" alt="Benchmark results on Android" />
+</p>
+
+| Case | Expo (iOS · Android) | Turbo (iOS · Android) | Nitro (iOS · Android) |
+|---|---|---|---|
+| `add` × 10,000 | 6.8 · 10.5 ms | 10.0 · 4.8 ms | **1.3 · 3.1 ms** |
+| `sha256` × 1,000 | 1.2 · 3.9 ms | 1.8 · 2.8 ms | **0.7 · 2.7 ms** |
+| `sha256Bytes` 1 MB × 5 | 2.1 · 6.3 ms | 765 · 1343 ms | **1.9 · 3.0 ms** |
+| `sha256Iterated` 100,000 | 55 · 110 ms | **47 · 79 ms** | 62 · 119 ms |
+| ticker (events) | 101 · 92 | 101 · 90 | 101 · 88 |
+
+**What the numbers say**
+
+- **Call overhead:** Nitro is the fastest on both platforms. Turbo depends on the platform: on iOS it's the slowest, because ObjC Turbo modules dispatch every call through `NSInvocation`, while on Android (JNI) it's close to Nitro. Expo pays for its argument conversion layer.
+- **Binary data:** Turbo is **~350× (iOS) and ~450× (Android) slower**, because codegen has no `ArrayBuffer`, so every byte becomes a boxed number. Don't move binary data through a codegen array.
+- **Work that stays native:** `sha256Iterated` crosses the bridge only once, so all three are close. The small gaps come from the crypto library (CommonCrypto vs CryptoKit) and thread scheduling, not from the bridge.
+- **Ticker on Android (~90):** the Kotlin implementations reschedule with `Handler.postDelayed` after each tick, so the delay drifts. That's the timer implementation, not the bridge.
+
+**Lesson: a benchmark measures your code as well as the bridge.** The first iOS run said "Turbo hashes 4× faster". The real cause was the hex conversion: Swift's `map { String(format: "%02x") }` against ObjC's `appendFormat`. Switching all modules to the same lookup table took `sha256Iterated` from **~2000 ms to ~55 ms**, and the gap disappeared.
 
 ### Running it
 
@@ -204,7 +228,31 @@ plugins/
 
 Ayrıca üçünün de aynı hash'leri döndürdüğünü kontrol ediyor.
 
-> Sonuçlar: _Release build'den alınıp doldurulacak._ Debug build ek yük getirip sayıları çarpıtıyor.
+#### Sonuçlar
+
+Apple Silicon Mac üzerinde Release build'ler: **iPhone 16e simülatörü (iOS 26)** ve **Android emülatörü (Android 16, arm64)**. Gerçek cihazlarda mutlak sayılar farklı olur ve ölçümler arasında yaklaşık ±%20 oynama var. Oranlara bak.
+
+<p>
+  <img src="docs/benchmark-ios.png" width="300" alt="iOS benchmark sonuçları" />
+  <img src="docs/benchmark-android.png" width="300" alt="Android benchmark sonuçları" />
+</p>
+
+| Senaryo | Expo (iOS · Android) | Turbo (iOS · Android) | Nitro (iOS · Android) |
+|---|---|---|---|
+| `add` × 10.000 | 6,8 · 10,5 ms | 10,0 · 4,8 ms | **1,3 · 3,1 ms** |
+| `sha256` × 1.000 | 1,2 · 3,9 ms | 1,8 · 2,8 ms | **0,7 · 2,7 ms** |
+| `sha256Bytes` 1 MB × 5 | 2,1 · 6,3 ms | 765 · 1343 ms | **1,9 · 3,0 ms** |
+| `sha256Iterated` 100.000 | 55 · 110 ms | **47 · 79 ms** | 62 · 119 ms |
+| ticker (event) | 101 · 92 | 101 · 90 | 101 · 88 |
+
+**Sayılar ne diyor**
+
+- **Çağrı maliyeti:** Nitro iki platformda da en hızlısı. Turbo platforma göre değişiyor: iOS'ta en yavaşı, çünkü ObjC Turbo modülleri her çağrıyı `NSInvocation` üzerinden gönderiyor. Android'de (JNI) ise Nitro'ya yakın. Expo, argüman dönüştürme katmanının bedelini ödüyor.
+- **Binary veri:** Turbo **~350× (iOS) ve ~450× (Android) daha yavaş**, çünkü codegen'de `ArrayBuffer` yok ve her byte kutulanmış bir sayıya dönüşüyor. Binary veriyi codegen dizisiyle taşıma.
+- **Native'de kalan iş:** `sha256Iterated` köprüyü sadece bir kez geçiyor, o yüzden üçü de birbirine yakın. Küçük farklar köprüden değil, kripto kütüphanesinden (CommonCrypto vs CryptoKit) ve thread zamanlamasından geliyor.
+- **Android'de ticker (~90):** Kotlin implementasyonları her tick'ten sonra `Handler.postDelayed` ile yeniden zamanlıyor, bu yüzden gecikme kayıyor. Bu köprüden değil, timer implementasyonundan kaynaklanıyor.
+
+**Ders: bir benchmark köprüyle birlikte senin kodunu da ölçer.** İlk iOS ölçümü "Turbo 4× daha hızlı hash'liyor" diyordu. Asıl sebep hex dönüşümüydü: Swift'teki `map { String(format: "%02x") }` ile ObjC'deki `appendFormat`. Tüm modülleri aynı lookup table'a geçirmek `sha256Iterated`'ı **~2000 ms'den ~55 ms'ye** indirdi ve fark ortadan kalktı.
 
 ### Çalıştırma
 

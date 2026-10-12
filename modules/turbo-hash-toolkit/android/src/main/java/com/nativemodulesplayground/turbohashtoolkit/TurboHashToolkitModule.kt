@@ -8,6 +8,8 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
 import java.security.MessageDigest
 
+private val HEX = "0123456789abcdef".toCharArray()
+
 class TurboHashToolkitModule(reactContext: ReactApplicationContext) :
   NativeTurboHashToolkitSpec(reactContext) {
 
@@ -69,10 +71,16 @@ class TurboHashToolkitModule(reactContext: ReactApplicationContext) :
     tick = null
   }
 
-  private fun sha256Hex(data: ByteArray): String =
-    MessageDigest.getInstance("SHA-256")
-      .digest(data)
-      .joinToString("") { "%02x".format(it) }
+  private fun sha256Hex(data: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-256").digest(data)
+    val out = CharArray(digest.size * 2)
+    for (i in digest.indices) {
+      val v = digest[i].toInt() and 0xff
+      out[i * 2] = HEX[v ushr 4]
+      out[i * 2 + 1] = HEX[v and 0x0f]
+    }
+    return String(out)
+  }
 
   companion object {
     const val NAME = NativeTurboHashToolkitSpec.NAME

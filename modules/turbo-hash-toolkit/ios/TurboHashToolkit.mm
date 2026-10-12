@@ -10,12 +10,15 @@ static NSString *SHA256Hex(NSData *data) {
   unsigned char digest[CC_SHA256_DIGEST_LENGTH];
   CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
 
-  NSMutableString *hex =
-      [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
+  static const char digits[] = "0123456789abcdef";
+  char hex[CC_SHA256_DIGEST_LENGTH * 2];
   for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
-    [hex appendFormat:@"%02x", digest[i]];
+    hex[i * 2] = digits[digest[i] >> 4];
+    hex[i * 2 + 1] = digits[digest[i] & 0x0f];
   }
-  return hex;
+  return [[NSString alloc] initWithBytes:hex
+                                  length:sizeof(hex)
+                                encoding:NSASCIIStringEncoding];
 }
 
 // Sync: runs on the JS thread, JS waits for the return value

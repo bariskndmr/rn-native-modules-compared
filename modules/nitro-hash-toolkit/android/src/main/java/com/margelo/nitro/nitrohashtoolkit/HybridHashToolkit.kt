@@ -8,6 +8,8 @@ import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.Promise
 import java.security.MessageDigest
 
+private val HEX = "0123456789abcdef".toCharArray()
+
 // C++ tarafı bu sınıfı JNI ile reflection üzerinden oluşturur → R8 silmesin
 @DoNotStrip
 @Keep
@@ -69,8 +71,14 @@ class HybridHashToolkit : HybridHashToolkitSpec() {
     tick = null
   }
 
-  private fun sha256Hex(data: ByteArray): String =
-    MessageDigest.getInstance("SHA-256")
-      .digest(data)
-      .joinToString("") { "%02x".format(it) }
+  private fun sha256Hex(data: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-256").digest(data)
+    val out = CharArray(digest.size * 2)
+    for (i in digest.indices) {
+      val v = digest[i].toInt() and 0xff
+      out[i * 2] = HEX[v ushr 4]
+      out[i * 2 + 1] = HEX[v and 0x0f]
+    }
+    return String(out)
+  }
 }

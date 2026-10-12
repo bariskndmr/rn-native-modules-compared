@@ -5,6 +5,7 @@ import NitroModules
 class HybridHashToolkit: HybridHashToolkitSpec {
   private var timer: Timer?
   private var count = 0
+  private static let hexDigits = Array("0123456789abcdef".utf8)
 
   func add(a: Double, b: Double) throws -> Double {
     return a + b
@@ -37,7 +38,8 @@ class HybridHashToolkit: HybridHashToolkitSpec {
       guard let self else { return }
       self.timer?.invalidate()
       self.count = 0
-      self.timer = Timer.scheduledTimer(withTimeInterval: intervalMs / 1000, repeats: true) { [weak self] _ in
+      self.timer = Timer.scheduledTimer(withTimeInterval: intervalMs / 1000, repeats: true) {
+        [weak self] _ in
         guard let self else { return }
         self.count += 1
         onTick(Double(self.count))
@@ -64,6 +66,13 @@ class HybridHashToolkit: HybridHashToolkitSpec {
   }
 
   private static func sha256Hex(_ data: Data) -> String {
-    return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    var hex = [UInt8]()
+    hex.reserveCapacity(64)
+    for byte in SHA256.hash(data: data) {
+      hex.append(hexDigits[Int(byte >> 4)])
+      hex.append(hexDigits[Int(byte & 0x0f)])
+    }
+    return String(decoding: hex, as: UTF8.self)
   }
+
 }
