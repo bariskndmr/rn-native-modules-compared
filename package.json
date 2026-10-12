@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.21",
     "@native-modules-playground/turbo-hash-toolkit": "file:./modules/turbo-hash-toolkit",
+    "@native-modules-playground/nitro-hash-toolkit": "file:./modules/nitro-hash-toolkit",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",
     "expo-dev-client": "~57.0.19",

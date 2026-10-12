@@ -1,5 +1,3 @@
-// TODO: Export specs that extend HybridObject<...> here
-// src/specs/HashToolkit.nitro.ts
 import { type HybridObject } from 'react-native-nitro-modules'
 
 export interface HashToolkit extends HybridObject<{
